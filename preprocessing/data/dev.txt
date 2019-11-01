@@ -1,0 +1,27 @@
+# AMR release; corpus: bolt; section: dev; number of AMRs: 133 (generated on Fri Mar 4, 2016 at 21:04:27)
+
+# ::id bolt12_64545_0526.1 ::date 2012-12-23T18:47:13 ::annotator SDL-AMR-09 ::preferred
+# ::snt There are many who have a sense of urgency, quietly watching how things develop,you are dragons coiling, you are tigers crouching, I admire noble-minded patriots.
+# ::save-date Fri Jul 24, 2015 ::file bolt12_64545_0526_1.txt
+(m / multi-sentence
+      :snt1 (m2 / many
+            :ARG0-of (s / sense-01
+                  :ARG1 (u / urgency)
+                  :time (w / watch-01
+                        :ARG0 m2
+                        :ARG1 (t3 / thing
+                              :manner-of (d / develop-02
+                                    :ARG0 (t / thing)))
+                        :manner (q / quiet-04
+                              :ARG1 m2))))
+      :snt2 (d2 / dragon
+            :domain (y / you)
+            :ARG0-of (c / coil-01))
+      :snt3 (t2 / tiger
+            :domain (y2 / you)
+            :ARG0-of (c2 / crouch-01))
+      :snt4 (a / admire-01
+            :ARG0 (i / i)
+            :ARG1 (p / patriot
+                  :ARG0-of (m3 / mind-04
+                        :mod (n / noble)))))
