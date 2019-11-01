@@ -1,7 +1,7 @@
 # AMR-parser
 Code for our **EMNLP2019** paper, 
 
-**Core Semantic First: A Top-down Approach for AMR Parsing**. [[arxiv\]](https://arxiv.org/pdf/1909.04303.pdf)
+**Core Semantic First: A Top-down Approach for AMR Parsing**. [[arxiv]](https://arxiv.org/pdf/1909.04303.pdf)
 
 Deng Cai and Wai Lam.
 
@@ -19,20 +19,20 @@ in the directory `preprocessing`
 1. make a directory, for example `preprocessing/2017`. Put files `train.txt`, `dev.txt`,`test.txt`in it. The format of these files is shown in our example `preprocessing/data/dev.txt`.
 2. `sh go.sh` (you may make necessary changes in `convertingAMR.java`)
 3. `python2 preprocess.py`
-
-- We already provided the alignment information (LDC2017T10) as in `common/out_standford`) given by the [Oneplus/tamr](https://github.com/Oneplus/tamr).
+- We use Stanford Corenlp to extract NER, POS and lemma, see `go.sh` and `convertingAMR.java` for details.
+- We already provided the alignment information used for concept prediction as in `common/out_standford` (LDC2017T10 by the aligner of [Oneplus/tamr](https://github.com/Oneplus/tamr)).
 
 
 # Training
 in the directory  `parser`
-2. `python3 extract.py && mv *vocab *table ../preprocessing/2017/.` Make vocabularies for the dataset in `../preprocessing/2017/` (you may make necessary changes in `extract.py`)
-2. `sh train.sh` Be patient! Checkpoints will be saved in the directory `ckpt` (make necessary changes in `train.sh`).
+1. `python3 extract.py && mv *vocab *table ../preprocessing/2017/.` Make vocabularies for the dataset in `../preprocessing/2017` (you may make necessary changes in `extract.py` and the command line as well)
+2. `sh train.sh` Be patient! Checkpoints will be saved in the directory `ckpt` by default. (you may make necessary changes in `train.sh`).
 
 # Testing
 
 in the directory  `parser`
-1. `sh work.sh` (make necessary changes in `work.sh`)
-   The most important argument is `--load_path`, set it to the checkpoint file. The output file will be in the same folder with the checkpoint file. For example, if the `load_path` is `somewhere/some_ckpt`, the output file is `somewhere/some_ckpt_test_out`
+1. `sh work.sh` (you should necessary changes in `work.sh`)
+- The most important argument is `--load_path`, which is set to a specific checkpoint file, for example, `somewhere/some_ckpt`. The output file will be in the same folder with the checkpoint file, for example, `somewhere/some_ckpt_test_out`
 
 # Evaluation
 
