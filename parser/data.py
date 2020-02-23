@@ -6,6 +6,7 @@ from AMRGraph import AMRGraph
 from extract import read_file
 
 PAD, UNK, DUM, NIL, END, CLS = '<PAD>', '<UNK>', '<DUMMY>', '<NULL>', '<END>', '<CLS>'
+GPU_SIZE = 12000 # okay for 8G memory
 
 def load_pretrained_word_embed(fname):
     vs= dict()
@@ -182,10 +183,15 @@ class DataLoader(object):
             num_tokens += len(self.data[i]['tok']) + len(self.data[i]['amr'])
             data.append(self.data[i])
             if num_tokens >= self.batch_size:
+                sz = len(data)* (2 + max(len(x['tok']) for x in data) + max(len(x['amr']) for x in data))
+                if sz > GPU_SIZE:
+                    # because we only have limited GPU memory
+                    batches.append(data[:len(data)//2])
+                    data = data[len(data)//2:]
                 batches.append(data)
                 num_tokens, data = 0, []
         
-        if not self.train or num_tokens > self.batch_size/2:
+        if data:
             batches.append(data)
         
         if self.train:

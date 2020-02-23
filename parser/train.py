@@ -49,6 +49,7 @@ def parse_config():
 
 
     parser.add_argument('--epochs', type=int)
+    parser.add_argument('--batches_per_update', type=int)
     parser.add_argument('--train_data', type=str)
     parser.add_argument('--dev_data', type=str)
     parser.add_argument('--train_batch_size', type=int)
@@ -65,6 +66,7 @@ def parse_config():
     parser.add_argument('--MASTER_ADDR', type=str)
     parser.add_argument('--MASTER_PORT', type=str)
     parser.add_argument('--start_rank', type=int)
+    parser.add_argument('--resume_ckpt', type=str, default=None)
 
     return parser.parse_args()
 
@@ -145,6 +147,15 @@ def main(args, local_rank):
     queue = mp.Queue(10)
     train_data_generator = mp.Process(target=data_proc, args=(train_data, queue)) 
     train_data_generator.start()
+
+    used_batches = 0
+    if args.resume_ckpt:
+        ckpt = torch.load(args.resume_ckpt)
+        model.load_state_dict(ckpt['model'])
+        optimizer.load_state_dict(ckpt['optimizer'])
+        batches_acm = ckpt['batches_acm']
+        del ckpt
+
     model.train()
     epoch = 0
     while True:
@@ -155,7 +166,7 @@ def main(args, local_rank):
         else:
             batch = move_to_device(batch, model.device)
             concept_loss, arc_loss, rel_loss = model(batch)
-            loss = concept_loss + arc_loss + rel_loss
+            loss = (concept_loss + arc_loss + rel_loss) / args.batches_per_update
             loss_value = loss.item()
             concept_loss_value = concept_loss.item()
             arc_loss_value = arc_loss.item()
@@ -168,8 +179,13 @@ def main(args, local_rank):
             concept_loss_acm += concept_loss_value
             arc_loss_acm += arc_loss_value
             rel_loss_acm += rel_loss_value
-            batches_acm += 1
             loss.backward()
+
+            used_batches += 1
+            if not (used_batches % args.batches_per_update == -1 % args.batches_per_update):
+                continue
+            batches_acm += 1
+
             if args.world_size > 1:
                 average_gradients(model)
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -180,8 +196,13 @@ def main(args, local_rank):
                 if batches_acm % args.print_every == -1 % args.print_every:
                     print ('Train Epoch %d, Batch %d, Discarded Batch %d, conc_loss %.3f, arc_loss %.3f, rel_loss %.3f'%(epoch, batches_acm, discarded_batches_acm, concept_loss_acm/batches_acm, arc_loss_acm/batches_acm, rel_loss_acm/batches_acm))
                     model.train()
-                if batches_acm % args.eval_every == -1 % args.eval_every: 
-                    torch.save({'args':args, 'model':model.state_dict()}, '%s/epoch%d_batch%d'%(args.ckpt, epoch, batches_acm))
+                
+                if batches_acm % args.eval_every == -1 % args.eval_every:
+                    model.eval() 
+                    torch.save({'args':args, 
+                                'model':model.state_dict(),
+                                'batches_acm': batches_acm,
+                                'optimizer': optimizer.state_dict()}, '%s/epoch%d_batch%d'%(args.ckpt, epoch, batches_acm))
                     model.train()
 
 def init_processes(args, local_rank, backend='nccl'):
@@ -200,7 +221,7 @@ if __name__ == "__main__":
     if args.world_size == 1:
         main(args, 0)
         exit(0)
-    args.train_batch_size = args.train_batch_size / args.world_size
+    args.train_batch_size = args.train_batch_size
     processes = []
     for rank in range(args.gpus):
         p = mp.Process(target=init_processes, args=(args, rank))

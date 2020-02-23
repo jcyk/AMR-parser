@@ -7,4 +7,4 @@ python3 work.py --test_data ${dataset}/dev.txt_processed_preprocess \
                --beam_size 8\
                --alpha 0.6\
                --max_time_step 100\
-               --output_suffix _test_out
+               --output_suffix _dev_out

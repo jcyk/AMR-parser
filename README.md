@@ -22,8 +22,8 @@ in the directory `preprocessing`
 - We use Stanford Corenlp to extract NER, POS and lemma, see `go.sh` and `convertingAMR.java` for details.
 - We already provided the alignment information used for concept prediction as in `common/out_standford` (LDC2017T10 by the aligner of [Oneplus/tamr](https://github.com/Oneplus/tamr)).
 
-
 # Training
+
 in the directory  `parser`
 1. `python3 extract.py && mv *vocab *table ../preprocessing/2017/.` Make vocabularies for the dataset in `../preprocessing/2017` (you may make necessary changes in `extract.py` and the command line as well)
 2. `sh train.sh` Be patient! Checkpoints will be saved in the directory `ckpt` by default. (you may make necessary changes in `train.sh`).
@@ -57,7 +57,16 @@ in the directory `amr-evaluation-tool-enhanced`
 
    `python2 smatch/smatch.py --pr -f parsed_data golden_data --levels 4`
 
+# Pretrained Model
+
+We release our pretrained model at [Google Drive](https://drive.google.com/open?id=1UOB_Czv0plHhindZRR_dwdnPZhBwqNES).
+
+To use the pretrained model, move the vocabulary files under `[Google Drive]/vocabs` to `preprocessing/2017/` and adjust `work.sh` accordingly (set `--load_path` point to `[Google Drive]/model.ckpt`).
+
+We also provide the *exact* model output reported in our paper. The output file and the corresponding reference file are in the `legacy` folder. 
+
 # Citation
+
 If you find the code useful, please cite our paper.
 ```
 @inproceedings{cai-lam-2019-core,
